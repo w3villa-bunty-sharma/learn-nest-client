@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Custom base styles go inside @layer base, so they never override Tailwind classes */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-white text-slate-900 antialiased;
+  }
+}
