@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,6 +32,9 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
+    console.log("Signup function called!");
+    console.log("Form Data:", formData);
+
     setMessage("");
 
     if (formData.password !== formData.confirmPassword) {
@@ -54,6 +59,7 @@ export default function SignupPage() {
       });
 
       const data = await response.json();
+      console.log("Signup Response:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Signup failed.");
@@ -62,12 +68,22 @@ export default function SignupPage() {
       setMessage(data.message);
       setMessageType("success");
 
+      // Save email and email sending time
+      sessionStorage.setItem(
+        "signupEmail",
+        formData.email.trim().toLowerCase(),
+      );
+      sessionStorage.setItem("signupEmailSentAt", Date.now().toString());
+
       setFormData({
         name: "",
         email: "",
         password: "",
         confirmPassword: "",
       });
+
+      router.push("/verify-email");
+      
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
       setMessageType("error");
@@ -210,20 +226,18 @@ export default function SignupPage() {
                 </div>
 
                 {/* SIGNUP FORM */}
-                <form className="mt-8 space-y-4" 
-                onSubmit={handleSignup}>
-         
+                <form className="mt-8 space-y-4" onSubmit={handleSignup}>
                   {/* FULL NAME */}
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-slate-700"
-                    value={formData.name}
-                    onChange={handleChange}>
+                    <label className="mb-2 block text-sm font-bold text-slate-700">
                       Full Name
                     </label>
 
                     <input
                       type="text"
                       name="name"
+                      value={formData.name}
+                      onChange={handleChange}
                       placeholder="Enter your full name"
                       required
                       className="w-full rounded-lg border border-indigo-100 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -232,15 +246,15 @@ export default function SignupPage() {
 
                   {/* EMAIL */}
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-slate-700"
-                    value={formData.email}
-                    onChange={handleChange}>
+                    <label className="mb-2 block text-sm font-bold text-slate-700">
                       Email Address
                     </label>
 
                     <input
                       type="email"
                       name="email"
+                      value={formData.email}
+                      onChange={handleChange}
                       placeholder="you@example.com"
                       required
                       className="w-full rounded-lg border border-indigo-100 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -249,9 +263,7 @@ export default function SignupPage() {
 
                   {/* PASSWORD */}
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-slate-700"
-                    value={formData.password}
-                    onChange={handleChange}>
+                    <label className="mb-2 block text-sm font-bold text-slate-700">
                       Password
                     </label>
 
@@ -259,6 +271,8 @@ export default function SignupPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         name="password"
+                        value={formData.password}
+                        onChange={handleChange}
                         placeholder="Create a password"
                         required
                         className="w-full rounded-lg border border-indigo-100 bg-white px-4 py-3 pr-16 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -276,9 +290,7 @@ export default function SignupPage() {
 
                   {/* CONFIRM PASSWORD */}
                   <div>
-                    <label className="mb-2 block text-sm font-bold text-slate-700"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}>
+                    <label className="mb-2 block text-sm font-bold text-slate-700">
                       Confirm Password
                     </label>
 
@@ -286,6 +298,8 @@ export default function SignupPage() {
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
                         placeholder="Confirm your password"
                         required
                         className="w-full rounded-lg border border-indigo-100 bg-white px-4 py-3 pr-16 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -302,6 +316,18 @@ export default function SignupPage() {
                       </button>
                     </div>
                   </div>
+
+                  {message && (
+                    <p
+                      className={`text-center text-sm font-medium ${
+                        messageType === "success"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {message}
+                    </p>
+                  )}
 
                   {/* SUBMIT BUTTON */}
                   <button
