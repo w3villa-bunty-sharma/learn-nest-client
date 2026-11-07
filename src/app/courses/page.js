@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, SearchX } from "lucide-react";
-import Navbar from "@/components/Navbar";
 import CourseCard from "@/components/CourseCard";
 import { courses } from "@/data/courses";
+import ConditionalNavbar from "@/components/ConditionalNavbar";
+
 
 const categories = ["All", "Development", "Design", "Programming"];
 
@@ -19,11 +20,13 @@ export default function CoursesPage() {
   const [category, setCategory] = useState("All");
   const [sort, setSort] = useState("popularity");
 
+ 
+
   const visibleCourses = useMemo(() => {
     const result = courses.filter(
       (course) =>
         (category === "All" || course.category === category) &&
-        course.title.toLowerCase().includes(query.trim().toLowerCase())
+        course.title.toLowerCase().includes(query.trim().toLowerCase()),
     );
 
     if (sort === "price-asc") result.sort((a, b) => a.price - b.price);
@@ -35,7 +38,7 @@ export default function CoursesPage() {
 
   return (
     <>
-      <Navbar />
+      <ConditionalNavbar  />
 
       <main className="min-h-screen bg-white">
         {/* Hero banner */}
@@ -63,7 +66,9 @@ export default function CoursesPage() {
                 <p className="mt-1 text-4xl font-bold text-violet-700">
                   {courses.length}
                 </p>
-                <p className="text-sm text-slate-500">courses to start learning</p>
+                <p className="text-sm text-slate-500">
+                  courses to start learning
+                </p>
 
                 <div className="mt-5 space-y-2 border-t border-slate-100 pt-4 text-sm text-slate-600">
                   <p>4 to 8 weeks per course</p>
@@ -145,7 +150,9 @@ export default function CoursesPage() {
           ) : (
             <div className="mt-6 flex flex-col items-center rounded-2xl bg-violet-50 px-6 py-14 text-center">
               <SearchX size={32} className="text-violet-500" />
-              <p className="mt-3 font-semibold text-slate-900">No courses found</p>
+              <p className="mt-3 font-semibold text-slate-900">
+                No courses found
+              </p>
               <p className="mt-1 text-sm text-slate-500">
                 Try searching with a different course name.
               </p>

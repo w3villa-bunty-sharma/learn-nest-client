@@ -9,7 +9,7 @@ export default function AuthNavbar() {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Explore Courses", href: "/courses" },
+    { name: "Courses", href: "/courses" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];

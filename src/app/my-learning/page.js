@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import DashboardNavbar from "@/components/DashboardNavbar";
 import {
   ArrowRight,
   BookOpen,
@@ -96,8 +98,24 @@ const stats = [
 ];
 
 export default function MyLearningPage() {
+  const [firstName, setFirstName] = useState("Learner");
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return;
+
+      const user = JSON.parse(storedUser);
+      const fullName = typeof user?.name === "string" ? user.name.trim() : "";
+      if (fullName) setFirstName(fullName.split(/\s+/)[0]);
+    } catch (error) {
+      console.error("Unable to read the logged-in user from localStorage.", error);
+    }
+  }, []);
+
   return (
     <>
+      <DashboardNavbar />
       <main className="min-h-screen bg-[#f7f8fc] text-slate-900">
         <div className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
           {/* Page Heading */}
@@ -108,7 +126,7 @@ export default function MyLearningPage() {
                 YOUR LEARNING SPACE
               </div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-                Welcome back, Learner!
+                Welcome back, {firstName}!
               </h1>
               <p className="mt-2 text-sm text-slate-500 md:text-base">
                 Every step forward brings you closer to your goals.

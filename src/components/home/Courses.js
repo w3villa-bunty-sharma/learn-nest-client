@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 
+
 const courses = [
   {
     title: "Full Stack Web Development",

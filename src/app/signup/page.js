@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
+import { GoogleLogin } from "@react-oauth/google";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -83,9 +84,42 @@ export default function SignupPage() {
       });
 
       router.push("/verify-email");
-      
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
+      setMessageType("error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async (credentialResponse) => {
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          credential: credentialResponse.credential,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Google signup failed.");
+      }
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      setMessage("Account created successfully!");
+      setMessageType("success");
+
+      router.push("/my-learning");
+    } catch (error) {
+      setMessage(error.message || "Google signup failed.");
       setMessageType("error");
     } finally {
       setLoading(false);
@@ -337,6 +371,33 @@ export default function SignupPage() {
                     Create Account
                   </button>
                 </form>
+
+                {/* DIVIDER */}
+                <div className="my-6 flex items-center gap-3">
+                  <div className="h-px flex-1 bg-indigo-100" />
+                  <span className="text-xs font-semibold text-slate-400">
+                    OR SIGN UP WITH
+                  </span>
+                  <div className="h-px flex-1 bg-indigo-100" />
+                </div>
+
+                {/* GOOGLE SIGNUP */}
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={handleGoogleSignup}
+                    onError={() => {
+                      setMessage("Google Signup Failed");
+                      setMessageType("error");
+                    }}
+                    useOneTap={false}
+                    auto_select={false}
+                    theme="outline"
+                    size="large"
+                    shape="pill"
+                    text="signup_with"
+                    width="320"
+                  />
+                </div>
 
                 {/* LOGIN LINK */}
                 <p className="mt-6 text-center text-sm text-slate-500">
