@@ -126,7 +126,7 @@ export default function MyLearningPage() {
                 YOUR LEARNING SPACE
               </div>
               <h1 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
-                Welcome back, {firstName}!
+                Welcome, {firstName}!
               </h1>
               <p className="mt-2 text-sm text-slate-500 md:text-base">
                 Every step forward brings you closer to your goals.
