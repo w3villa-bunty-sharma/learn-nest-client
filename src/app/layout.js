@@ -1,4 +1,5 @@
 import "./globals.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
