@@ -1,6 +1,5 @@
 import "./globals.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
   title: "LearnNest | Learn Today. Grow Tomorrow.",
@@ -11,11 +10,7 @@ export default function RootLayout({ children }) {
   return (
       <html lang="en">
       <body>
-        <GoogleOAuthProvider
-          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-        >
-          {children}
-        </GoogleOAuthProvider>
+        {children}
       </body>
     </html>
   );

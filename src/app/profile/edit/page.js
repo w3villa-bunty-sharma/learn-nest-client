@@ -147,12 +147,12 @@ export default function EditProfilePage() {
       address_line1:
         location.area ||
         location.fullAddress ||
-        current.address_line1,
-      city: location.city || current.city,
-      state: location.state || current.state,
-      postal_code:
-        location.postalCode || current.postal_code,
-      country: location.country || current.country,
+        "",
+      address_line2: "",
+      city: location.city || "",
+      state: location.state || "",
+      postal_code: location.postalCode || "",
+      country: location.country || "",
     }));
 
     setError("");

@@ -10,108 +10,59 @@ import {
   Clock3,
   GraduationCap,
   Play,
-  TrendingUp,
-  Trophy,
-  LayoutDashboard,
   Sparkles,
 } from "lucide-react";
 import Footer from "@/components/Footer";
+import { courses as courseCatalog } from "@/data/courses";
+import { useRouter } from "next/navigation";
 
-const courses = [
-  {
-    id: 1,
-    title: "Complete React.js Development",
-    slug: "react-js-development",
-    category: "Web Development",
-    instructor: "John Smith",
-    progress: 75,
-    completedLessons: 18,
-    totalLessons: 24,
-    duration: "12h 30m",
-    color: "bg-blue-100",
-    icon: "⚛️",
-    image: "/images/courses/react.jpg",
-    nextLesson: "React Hooks & State Management",
-  },
- {
-    id: 2,
-    slug: "data-analytics",
-    title: "Data Analytics",
-    category: "Programming",
-    instructor: "Jane Doe",
-    progress: 50,
-    completedLessons: 10,
-    totalLessons: 20,
-    duration: "8h 15m",
-    color: "bg-green-100",
-    icon: "📊",
-    image: "/images/courses/data-analytics.jpg",
-    nextLesson: "Data Visualization with Python",
-  },
-   
-  {
-    id: 3,
-    title: "UI/UX Design Fundamentals",
-    slug: "ui-ux-design",
-    category: "Design",
-    instructor: "Michael Brown",
-    progress: 90,
-    completedLessons: 18,
-    totalLessons: 20,
-    duration: "8h 20m",
-    color: "bg-purple-100",
-    icon: "🎨",
-    image: "/images/courses/ui-ux.jpg",
-    nextLesson: "Prototyping & User Testing",
-  },
-];
-
-const stats = [
-  {
-    label: "Enrolled Courses",
-    value: "03",
-    icon: BookOpen,
-    detail: "Your learning library",
-    color: "bg-blue-50 text-blue-600",
-  },
-  {
-    label: "In Progress",
-    value: "03",
-    icon: TrendingUp,
-    detail: "Keep the momentum",
-    color: "bg-violet-50 text-violet-600",
-  },
-  {
-    label: "Completed",
-    value: "00",
-    icon: Trophy,
-    detail: "Achievements earned",
-    color: "bg-amber-50 text-amber-600",
-  },
-  {
-    label: "Learning Hours",
-    value: "12.5",
-    icon: Clock3,
-    detail: "Time invested so far",
-    color: "bg-emerald-50 text-emerald-600",
-  },
-];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export default function MyLearningPage() {
   const [firstName, setFirstName] = useState("Learner");
+  const [courses, setCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (!storedUser) return;
+      const token = localStorage.getItem("token");
+      if (!storedUser) {
+        setLoadingCourses(false);
+        router.replace(`/login?next=${encodeURIComponent("/my-learning")}`);
+        return;
+      }
 
       const user = JSON.parse(storedUser);
       const fullName = typeof user?.name === "string" ? user.name.trim() : "";
       if (fullName) setFirstName(fullName.split(/\s+/)[0]);
+      if (!token) {
+        router.replace(`/login?next=${encodeURIComponent("/my-learning")}`);
+        return;
+      }
+
+      fetch(`${API_URL}/api/payment/enrollments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(async (response) => {
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.message || "Unable to load courses");
+          const enrolled = (result.enrollments || []).map((enrollment) => {
+            const course = courseCatalog.find((item) => item.slug === enrollment.slug);
+            return course ? { ...course, id: enrollment.slug } : null;
+          }).filter(Boolean);
+          setCourses(enrolled);
+        })
+        .catch((error) => console.error("Unable to load enrolled courses:", error))
+        .finally(() => setLoadingCourses(false));
     } catch (error) {
       console.error("Unable to read the logged-in user from localStorage.", error);
+      setLoadingCourses(false);
     }
-  }, []);
+  }, [router]);
+
+
 
   return (
     <>
@@ -156,8 +107,8 @@ export default function MyLearningPage() {
                 <br className="hidden sm:block" /> starts with one lesson.
               </h2>
               <p className="mt-3 max-w-lg text-sm leading-6 text-indigo-100">
-                You are making progress. Stay consistent, complete your lessons
-                and keep moving towards your learning goals.
+                Choose a course, learn at your own pace, and build practical
+                skills one lesson at a time.
               </p>
               <Link
                 href="/courses"
@@ -168,206 +119,48 @@ export default function MyLearningPage() {
             </div>
           </section>
 
-          {/* Statistics */}
-          <section className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {stats.map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.label}
-                  className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-slate-500">
-                        {item.label}
-                      </p>
-                      <h3 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                        {item.value}
-                      </h3>
-                    </div>
-                    <div className={`rounded-xl p-3 ${item.color}`}>
-                      <Icon size={21} />
-                    </div>
-                  </div>
-                  <p className="mt-3 text-xs text-slate-400">{item.detail}</p>
-                </div>
-              );
-            })}
-          </section>
-
-          {/* Continue Learning */}
           <section className="mb-12">
-            <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-violet-600">
-                  <Play size={15} />
-                  PICK UP WHERE YOU LEFT OFF
+                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-violet-600">
+                  <Play size={14} /> Pick up where you left off
                 </div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                  Continue Learning
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Jump back into your courses and keep making progress.
-                </p>
+                <h2 className="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Continue Learning</h2>
+                <p className="mt-2 text-sm text-slate-500">Jump back into a course and keep building your skills.</p>
               </div>
-              <span className="text-sm font-medium text-slate-400">
-                2 featured courses
-              </span>
+              <Link href="/my-courses" className="inline-flex items-center gap-2 text-sm font-semibold text-violet-700 hover:text-violet-900">
+                View My Courses <ArrowRight size={16} />
+              </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-              {courses.slice(0, 2).map((course) => (
-                <article
-                  key={course.id}
-                  className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition hover:shadow-lg"
-                >
-                  <div className="flex flex-col sm:flex-row">
-                    <div className="relative flex h-48 shrink-0 items-center justify-center overflow-hidden bg-slate-100 sm:h-auto sm:w-44">
-                      <img
-                        src={course.image}
-                        alt={course.title}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                      <span className="absolute bottom-3 left-3 rounded-lg bg-white/95 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-                        {course.category}
-                      </span>
-                    </div>
-
-                    <div className="flex-1 p-5">
-                      <p className="text-xs font-medium text-slate-400">
-                        INSTRUCTOR · {course.instructor}
-                      </p>
-                      <h3 className="mt-2 text-lg font-bold leading-snug text-slate-900">
-                        {course.title}
-                      </h3>
-
-                      <div className="mt-5 flex items-center justify-between text-sm">
-                        <span className="font-medium text-slate-500">
-                          Course progress
-                        </span>
-                        <span className="font-bold text-violet-700">
-                          {course.progress}%
-                        </span>
-                      </div>
-
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-500"
-                          style={{ width: `${course.progress}%` }}
-                        />
-                      </div>
-
-                      <p className="mt-2 text-xs text-slate-400">
-                        {course.completedLessons} of {course.totalLessons}{" "}
-                        lessons completed
-                      </p>
-
-                      <div className="mt-4 rounded-lg bg-violet-50 px-3 py-2">
-                        <p className="text-[11px] font-semibold uppercase tracking-wide text-violet-500">
-                          Up next
-                        </p>
-                        <p className="mt-1 text-xs font-medium text-violet-900">
-                          {course.nextLesson}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between border-t border-slate-100 px-5 py-4">
-                    <span className="flex items-center gap-1.5 text-xs text-slate-500">
-                      <Clock3 size={14} /> {course.duration}
-                    </span>
-                    <Link
-                      href={`/courses/${course.slug}`}
-                      className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-violet-700"
-                    >
-                      <Play size={13} /> Continue Learning
-                    </Link>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          {/* All Enrolled Courses */}
-          <section>
-            <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
-              <div>
-                <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-violet-600">
-                  <LayoutDashboard size={15} />
-                  YOUR LIBRARY
-                </div>
-                <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                  My Enrolled Courses
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Track your progress across all enrolled courses.
-                </p>
+            {loadingCourses ? (
+              <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Loading your learning space…</div>
+            ) : courses.length === 0 ? (
+              <div className="relative overflow-hidden rounded-3xl border border-violet-100 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
+                <div className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full bg-violet-50" />
+                <div className="relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700"><BookOpen size={25} /></div>
+                <h3 className="relative mt-4 text-xl font-bold text-slate-900">Your learning journey starts here</h3>
+                <p className="relative mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">Choose a course that interests you. Once enrolled, it will be ready for you here.</p>
+                <Link href="/courses" className="relative mt-6 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition hover:-translate-y-0.5 hover:bg-violet-700">Explore Courses <ArrowRight size={16} /></Link>
               </div>
-              <span className="rounded-full border border-violet-100 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700">
-                {courses.length} Courses
-              </span>
-            </div>
-
-            <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-              {courses.map((course, index) => (
-                <div
-                  key={course.id}
-                  className={`flex flex-col gap-5 p-5 transition hover:bg-slate-50/70 md:flex-row md:items-center md:px-6 ${
-                    index !== courses.length - 1
-                      ? "border-b border-slate-100"
-                      : ""
-                  }`}
-                >
-                  <div className="relative h-20 w-full shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-28">
-                    <img
-                      src={course.image}
-                      alt={course.title}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-violet-600">
-                      {course.category}
-                    </p>
-                    <h3 className="mt-1 font-bold text-slate-900">
-                      {course.title}
-                    </h3>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Instructor: {course.instructor}
-                    </p>
-                  </div>
-
-                  <div className="w-full md:w-44">
-                    <div className="mb-2 flex justify-between text-xs">
-                      <span className="text-slate-500">Progress</span>
-                      <span className="font-bold text-slate-700">
-                        {course.progress}%
-                      </span>
+            ) : (
+              <div className="grid gap-5 md:grid-cols-2">
+                {courses.slice(0, 2).map((course) => (
+                  <article key={course.id} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+                    <div className="relative h-52 overflow-hidden bg-slate-100">
+                      <img src={course.image} alt={course.title} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                      <span className="absolute left-4 top-4 rounded-full border border-white/70 bg-white/95 px-3 py-1.5 text-xs font-semibold text-violet-700 shadow-sm">{course.category}</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-violet-600 to-indigo-500"
-                        style={{ width: `${course.progress}%` }}
-                      />
+                    <div className="p-5 md:p-6">
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-500"><Clock3 size={14} /> {course.duration} <span>·</span> {course.level}</div>
+                      <h3 className="mt-3 text-xl font-bold leading-snug text-slate-900">{course.title}</h3>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{course.description}</p>
+                      <Link href={`/courses/${course.slug}`} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"><Play size={15} /> Open Course</Link>
                     </div>
-                    <p className="mt-1.5 text-[11px] text-slate-400">
-                      {course.completedLessons}/{course.totalLessons} lessons
-                    </p>
-                  </div>
-
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-violet-200 px-4 py-2.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50"
-                  >
-                    View Course <ArrowRight size={14} />
-                  </Link>
-                </div>
-              ))}
-            </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
 
           {/* Bottom Motivation */}

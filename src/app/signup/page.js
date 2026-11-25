@@ -1,12 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
-import { GoogleLogin } from "@react-oauth/google";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupRoute />
+    </Suspense>
+  );
+}
+
+function SignupRoute() {
+  const searchParams = useSearchParams();
+
+  return <SignupForm key={searchParams.toString()} />;
+}
+
+function SignupForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -20,6 +34,21 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
+  const formRef = useRef(null);
+
+  useEffect(() => {
+    const clearSignupForm = () => {
+      formRef.current?.reset();
+      setFormData({ name: "", email: "", password: "", confirmPassword: "" });
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setMessage("");
+      setMessageType("");
+    };
+
+    window.addEventListener("pageshow", clearSignupForm);
+    return () => window.removeEventListener("pageshow", clearSignupForm);
+  }, []);
 
   const handleFacebookSignup = () => {
     window.location.href = "http://localhost:5000/api/auth/facebook";
@@ -264,7 +293,12 @@ export default function SignupPage() {
                 </div>
 
                 {/* SIGNUP FORM */}
-                <form className="mt-8 space-y-4" onSubmit={handleSignup}>
+                <form
+                  ref={formRef}
+                  className="mt-8 space-y-4"
+                  onSubmit={handleSignup}
+                  autoComplete="off"
+                >
                   {/* FULL NAME */}
                   <div>
                     <label className="mb-2 block text-sm font-bold text-slate-700">
@@ -274,6 +308,7 @@ export default function SignupPage() {
                     <input
                       type="text"
                       name="name"
+                      autoComplete="off"
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Enter your full name"
@@ -291,6 +326,7 @@ export default function SignupPage() {
                     <input
                       type="email"
                       name="email"
+                      autoComplete="new-password"
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
@@ -309,6 +345,7 @@ export default function SignupPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         name="password"
+                        autoComplete="new-password"
                         value={formData.password}
                         onChange={handleChange}
                         placeholder="Create a password"
@@ -336,6 +373,7 @@ export default function SignupPage() {
                       <input
                         type={showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
+                        autoComplete="new-password"
                         value={formData.confirmPassword}
                         onChange={handleChange}
                         placeholder="Confirm your password"
@@ -387,19 +425,13 @@ export default function SignupPage() {
 
                 {/* GOOGLE SIGNUP */}
                 <div className="flex justify-center">
-                  <GoogleLogin
+                  <GoogleSignInButton
                     onSuccess={handleGoogleSignup}
                     onError={() => {
                       setMessage("Google Signup Failed");
                       setMessageType("error");
                     }}
-                    useOneTap={false}
-                    auto_select={false}
-                    theme="outline"
-                    size="large"
-                    shape="pill"
                     text="signup_with"
-                    width="320"
                   />
                 </div>
 

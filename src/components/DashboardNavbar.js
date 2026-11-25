@@ -15,6 +15,7 @@ import {
 
 const navLinks = [
   { label: "My Learning", href: "/my-learning", icon: LayoutDashboard },
+  { label: "My Courses", href: "/my-courses", icon: BookOpen },
 ];
 
 export default function DashboardNavbar() {
@@ -165,7 +166,7 @@ export default function DashboardNavbar() {
               </div>
 
               <Link
-                href="/my-learning"
+                href="/my-courses"
                 onClick={() => setDropdownOpen(false)}
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
@@ -202,7 +203,13 @@ export default function DashboardNavbar() {
 
       {/* MOBILE MENU */}
       {menuOpen && (
-        <div className="border-t border-slate-100 bg-white px-5 pb-5 md:hidden"></div>
+        <nav className="border-t border-slate-100 bg-white px-5 py-3 md:hidden">
+          {navLinks.map(({ label, href, icon: Icon }) => (
+            <Link key={label} href={href} onClick={() => setMenuOpen(false)} className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-slate-700 hover:bg-violet-50 hover:text-violet-700">
+              <Icon size={17} /> {label}
+            </Link>
+          ))}
+        </nav>
       )}
     </header>
   );

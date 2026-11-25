@@ -5,7 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
-import { GoogleLogin } from "@react-oauth/google";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+
+function getSafeRedirectPath(path) {
+  if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//")) {
+    return "/my-learning";
+  }
+  return path;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,10 +26,38 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [loading, setLoading] = useState(false);
+  const formRef = useRef(null);
 
   const facebookExchangeStarted = useRef(false);
 
+  const redirectAfterLogin = () => {
+    const destination = sessionStorage.getItem("learnnest_post_login_redirect");
+    sessionStorage.removeItem("learnnest_post_login_redirect");
+    router.push(getSafeRedirectPath(destination));
+  };
+
+  useEffect(() => {
+    const requestedPath = new URLSearchParams(window.location.search).get("next");
+    if (requestedPath) {
+      sessionStorage.setItem(
+        "learnnest_post_login_redirect",
+        getSafeRedirectPath(requestedPath)
+      );
+    }
+  }, []);
+
   // Handle Facebook callback and exchange authorization code
+  useEffect(() => {
+    const clearLoginForm = () => {
+      formRef.current?.reset();
+      setFormData({ email: "", password: "" });
+      setShowPassword(false);
+    };
+
+    window.addEventListener("pageshow", clearLoginForm);
+    return () => window.removeEventListener("pageshow", clearLoginForm);
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authorizationCode = params.get("facebook_code");
@@ -91,7 +126,7 @@ export default function LoginPage() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        router.push("/my-learning");
+        redirectAfterLogin();
       } catch (error) {
         setMessage(error.message || "Facebook login failed.");
         setMessageType("error");
@@ -144,7 +179,7 @@ export default function LoginPage() {
       setMessage("Login successful!");
       setMessageType("success");
 
-      router.push("/my-learning");
+      redirectAfterLogin();
     } catch (error) {
       setMessage(error.message || "Something went wrong.");
       setMessageType("error");
@@ -192,7 +227,7 @@ export default function LoginPage() {
       setMessage("Google login successful!");
       setMessageType("success");
 
-      router.push("/my-learning");
+      redirectAfterLogin();
     } catch (error) {
       setMessage(error.message || "Google login failed.");
       setMessageType("error");
@@ -354,7 +389,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* LOGIN FORM */}
-                <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+                <form ref={formRef} className="mt-8 space-y-5" onSubmit={handleLogin} autoComplete="off">
 
                   {/* EMAIL */}
                   <div>
@@ -365,6 +400,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       name="email"
+                      autoComplete="off"
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="you@example.com"
@@ -392,6 +428,7 @@ export default function LoginPage() {
                       <input
                         type={showPassword ? "text" : "password"}
                         name="password"
+                        autoComplete="new-password"
                         value={formData.password}
                         onChange={handleInputChange}
                         placeholder="Enter your password"
@@ -444,16 +481,12 @@ export default function LoginPage() {
 
                 {/* GOOGLE LOGIN */}
                 <div className="flex justify-center">
-                  <GoogleLogin
+                  <GoogleSignInButton
                     onSuccess={handleGoogleLogin}
                     onError={() => {
                       setMessage("Google Login Failed");
                       setMessageType("error");
                     }}
-                    theme="outline"
-                    size="large"
-                    shape="pill"
-                    width="320"
                   />
                 </div>
 
