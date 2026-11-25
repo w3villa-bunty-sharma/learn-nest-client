@@ -15,8 +15,7 @@ import {
 import Footer from "@/components/Footer";
 import { courses as courseCatalog } from "@/data/courses";
 import { useRouter } from "next/navigation";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { apiUrl } from "@/lib/api";
 
 export default function MyLearningPage() {
   const [firstName, setFirstName] = useState("Learner");
@@ -42,7 +41,7 @@ export default function MyLearningPage() {
         return;
       }
 
-      fetch(`${API_URL}/api/payment/enrollments`, {
+      fetch(apiUrl("/api/payment/enrollments"), {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(async (response) => {

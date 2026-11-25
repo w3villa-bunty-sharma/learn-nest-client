@@ -6,6 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import DashboardNavbar from "@/components/DashboardNavbar";
+import { apiUrl } from "@/lib/api";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -58,7 +59,7 @@ export default function EditProfilePage() {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/profile",
+          apiUrl("/api/profile"),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -200,7 +201,7 @@ export default function EditProfilePage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/profile/photo",
+        apiUrl("/api/profile/photo"),
         {
           method: "DELETE",
           headers: {
@@ -246,7 +247,7 @@ export default function EditProfilePage() {
       }
 
       const profileResponse = await fetch(
-        "http://localhost:5000/api/profile",
+        apiUrl("/api/profile"),
         {
           method: "PUT",
           headers: {
@@ -274,7 +275,7 @@ export default function EditProfilePage() {
         uploadingPhoto = true;
 
         const signatureResponse = await fetch(
-          "http://localhost:5000/api/profile/photo/signature",
+          apiUrl("/api/profile/photo/signature"),
           {
             method: "POST",
             headers: {
@@ -335,7 +336,7 @@ export default function EditProfilePage() {
         }
 
         const savePhotoResponse = await fetch(
-          "http://localhost:5000/api/profile/photo",
+          apiUrl("/api/profile/photo"),
           {
             method: "POST",
             headers: {

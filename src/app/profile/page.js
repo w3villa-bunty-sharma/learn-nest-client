@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import DashboardNavbar from "@/components/DashboardNavbar";
+import { apiUrl } from "@/lib/api";
 import jsPDF from "jspdf";
 import {
   ArrowLeft,
@@ -229,7 +230,7 @@ export default function ProfilePage() {
       }
 
       try {
-        const response = await fetch("http://localhost:5000/api/profile", {
+        const response = await fetch(apiUrl("/api/profile"), {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();

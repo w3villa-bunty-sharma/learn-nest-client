@@ -16,9 +16,7 @@ import {
 } from "lucide-react";
 import { courses } from "@/data/courses";
 import ConditionalNavbar from "@/components/ConditionalNavbar";
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { apiUrl } from "@/lib/api";
 
 function loadRazorpayScript() {
   return new Promise((resolve, reject) => {
@@ -104,7 +102,7 @@ function CheckoutContent() {
 
       await loadRazorpayScript();
 
-      const orderResponse = await fetch(`${API_URL}/api/payment/orders`, {
+      const orderResponse = await fetch(apiUrl("/api/payment/orders"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -152,7 +150,7 @@ function CheckoutContent() {
             setPaymentMessage("Verifying payment...");
 
             const verifyResponse = await fetch(
-              `${API_URL}/api/payment/verify`,
+              apiUrl("/api/payment/verify"),
               {
                 method: "POST",
                 headers: {

@@ -7,8 +7,8 @@ import DashboardNavbar from "@/components/DashboardNavbar";
 import CourseCard from "@/components/CourseCard";
 import Footer from "@/components/Footer";
 import { courses as courseCatalog } from "@/data/courses";
+import { apiUrl } from "@/lib/api";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 const categories = ["All", "Development", "Design", "Programming"];
 
 export default function MyCoursesPage() {
@@ -26,7 +26,7 @@ export default function MyCoursesPage() {
     }
 
     let cancelled = false;
-    fetch(`${API_URL}/api/payment/enrollments`, {
+    fetch(apiUrl("/api/payment/enrollments"), {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (response) => {

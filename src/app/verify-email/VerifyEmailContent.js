@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Mail, MailCheck, RefreshCw } from "lucide-react";
+import { apiUrl } from "@/lib/api";
 
 const COUNTDOWN_SECONDS = 60;
 
@@ -67,7 +68,7 @@ export default function VerifyEmailContent() {
       setError("");
 
       const response = await fetch(
-        "http://localhost:5000/api/auth/resend-verification",
+        apiUrl("/api/auth/resend-verification"),
         {
           method: "POST",
           headers: {
