@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   X,
+  UserRound,
 } from "lucide-react";
 
 const navLinks = [
@@ -25,6 +26,11 @@ export default function DashboardNavbar() {
   const [imgError, setImgError] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [profilePicture, setProfilePicture] = useState(null);
+  const name = user?.name || "Learner";
+  const email = user?.email || "";
+  const image = profilePicture || user?.profile_picture_url || "";
+  const initial = name.charAt(0).toUpperCase();
 
   // localStorage se user read karo
   useEffect(() => {
@@ -47,16 +53,38 @@ export default function DashboardNavbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  let cancelled = false;
+
+  fetch("http://localhost:5000/api/profile", {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(async (response) => {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      if (!cancelled) {
+        setProfilePicture(data.profile?.profile_picture_url || "");
+      }
+    })
+    .catch((err) => {
+      console.error("Unable to load profile picture:", err.message);
+    });
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     router.push("/login");
   };
 
-  const name = user?.name || "Learner";
-  const email = user?.email || "";
-  const image = user?.picture || user?.avatar || user?.image || "";
-  const initial = name.charAt(0).toUpperCase();
+
 
   const renderAvatar = (size = "h-10 w-10") =>
     image && !imgError ? (
@@ -96,11 +124,10 @@ export default function DashboardNavbar() {
               <Link
                 key={href}
                 href={href}
-                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
-                  active
+                className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${active
                     ? "bg-violet-50 text-violet-700"
                     : "text-slate-600 hover:bg-slate-50 hover:text-violet-700"
-                }`}
+                  }`}
               >
                 <Icon size={16} />
                 {label}
@@ -121,9 +148,8 @@ export default function DashboardNavbar() {
             </span>
             <ChevronDown
               size={16}
-              className={`text-slate-400 transition ${
-                dropdownOpen ? "rotate-180" : ""
-              }`}
+              className={`text-slate-400 transition ${dropdownOpen ? "rotate-180" : ""
+                }`}
             />
           </button>
 
@@ -144,6 +170,14 @@ export default function DashboardNavbar() {
                 className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
                 <BookOpen size={16} /> My Courses
+              </Link>
+
+              <Link
+                href="/profile"
+                onClick={() => setDropdownOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-violet-50 hover:text-violet-700"
+              >
+                <UserRound size={16} /> My Profile
               </Link>
 
               <button

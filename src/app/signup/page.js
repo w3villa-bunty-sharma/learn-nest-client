@@ -21,6 +21,10 @@ export default function SignupPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
 
+  const handleFacebookSignup = () => {
+    window.location.href = "http://localhost:5000/api/auth/facebook";
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -397,6 +401,22 @@ export default function SignupPage() {
                     text="signup_with"
                     width="320"
                   />
+                </div>
+
+                {/* FACEBOOK SIGNUP */}
+                <div className="mt-4 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleFacebookSignup}
+                    disabled={loading}
+                    className="relative flex h-[40px] w-[320px] items-center justify-center rounded-full border border-blue-200 bg-white px-5 text-sm font-bold text-blue-700 shadow-sm transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <span className="absolute left-5 flex h-6 w-6 items-center justify-center rounded-full bg-[#1877F2] text-base font-bold text-white">
+                      f
+                    </span>
+
+                    Continue with Facebook
+                  </button>
                 </div>
 
                 {/* LOGIN LINK */}
