@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { apiUrl } from "@/lib/api";
 
 function getSafeRedirectPath(path) {
   if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//")) {
@@ -102,7 +103,7 @@ export default function LoginPage() {
 
       try {
         const response = await fetch(
-          "http://localhost:5000/api/auth/facebook/exchange",
+          apiUrl("/api/auth/facebook/exchange"),
           {
             method: "POST",
             credentials: "include",
@@ -157,7 +158,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+        apiUrl("/api/auth/login"),
         {
           method: "POST",
           headers: {
@@ -191,7 +192,7 @@ export default function LoginPage() {
   // Facebook login
   const handleFacebookLogin = () => {
     window.location.href =
-      "http://localhost:5000/api/auth/facebook";
+      apiUrl("/api/auth/facebook");
   };
 
   // Google login
@@ -201,7 +202,7 @@ export default function LoginPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/auth/google",
+        apiUrl("/api/auth/google"),
         {
           method: "POST",
           headers: {

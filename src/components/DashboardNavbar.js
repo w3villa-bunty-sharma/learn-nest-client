@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { apiUrl } from "@/lib/api";
 import {
   BookOpen,
   ChevronDown,
@@ -60,7 +61,7 @@ export default function DashboardNavbar() {
 
   let cancelled = false;
 
-  fetch("http://localhost:5000/api/profile", {
+  fetch(apiUrl("/api/profile"), {
     headers: { Authorization: `Bearer ${token}` },
   })
     .then(async (response) => {

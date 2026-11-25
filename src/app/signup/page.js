@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthNavbar from "@/components/AuthNavbar";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
+import { apiUrl } from "@/lib/api";
 
 export default function SignupPage() {
   return (
@@ -51,7 +52,7 @@ function SignupForm() {
   }, []);
 
   const handleFacebookSignup = () => {
-    window.location.href = "http://localhost:5000/api/auth/facebook";
+    window.location.href = apiUrl("/api/auth/facebook");
   };
 
   const handleChange = (e) => {
@@ -80,7 +81,7 @@ function SignupForm() {
     try {
       setLoading(true);
 
-      const response = await fetch("http://localhost:5000/api/auth/signup", {
+      const response = await fetch(apiUrl("/api/auth/signup"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +131,7 @@ function SignupForm() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/google", {
+      const response = await fetch(apiUrl("/api/auth/google"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -3,14 +3,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { apiUrl } from "@/lib/api";
 
 const MapLibreLocationMap = dynamic(
   () => import("./MapLibreLocationMap"),
   { ssr: false }
 );
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 const INITIAL_POSITION = [28.6139, 77.2090];
 
@@ -43,7 +41,7 @@ export default function LocationPicker({ onLocationSelect }) {
         const [latitude, longitude] = position;
 
         const response = await fetch(
-          `${API_URL}/api/location/reverse?latitude=${latitude}&longitude=${longitude}`,
+          apiUrl(`/api/location/reverse?latitude=${latitude}&longitude=${longitude}`),
           { signal: controller.signal }
         );
 
@@ -122,7 +120,7 @@ export default function LocationPicker({ onLocationSelect }) {
           longitude: String(longitude),
         });
         const response = await fetch(
-          `${API_URL}/api/location/search?${params}`,
+          apiUrl(`/api/location/search?${params}`),
           { signal: controller.signal }
         );
 
