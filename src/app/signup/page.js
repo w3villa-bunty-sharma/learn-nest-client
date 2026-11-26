@@ -67,9 +67,6 @@ function SignupForm() {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    console.log("Signup function called!");
-    console.log("Form Data:", formData);
-
     setMessage("");
 
     if (formData.password !== formData.confirmPassword) {
@@ -94,8 +91,6 @@ function SignupForm() {
       });
 
       const data = await response.json();
-      console.log("Signup Response:", data);
-
       if (!response.ok) {
         throw new Error(data.message || "Signup failed.");
       }
